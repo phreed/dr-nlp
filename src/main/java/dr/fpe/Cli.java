@@ -27,7 +27,8 @@ public class Cli {
         this.options = new Options();
 
         options.addOption("l", "langFile", true, "the language-file to process.");
-        options.addOption("n", "nameFile", false, "the named-entities file.");
+        options.addOption("n", "nameFile", true, "the named-entities file.");
+        options.addOption("x", "parseFile", true, "the output XML file.");
     }
 
     public CommandLine eval(final String[] args) {
