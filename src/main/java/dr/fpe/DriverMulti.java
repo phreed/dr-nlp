@@ -49,7 +49,7 @@ public class DriverMulti {
         public void run() {
             Lexer lex = new Lexer();
             {
-                log.log(Level.INFO, "reading language file");
+                log.log(Level.INFO, "reading language file " + filePath.getPath().toString());
                 Reader rdr = null;
                 try {
                     InputStream is = new FileInputStream(filePath);
@@ -85,7 +85,8 @@ public class DriverMulti {
      * am not familiar with how to do that.
      */
     public Boolean main() {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
         if (cmd.hasOption("z")) {
             log.log(Level.INFO, "reading zipped input file");
             InputStream zippy = null;
@@ -121,6 +122,7 @@ public class DriverMulti {
                     executor.execute(task);
                 }
                 executor.shutdown();
+                reducer.reduce();
                 try {
                     executor.awaitTermination(30, TimeUnit.SECONDS);
                 } catch (InterruptedException ex) {
@@ -151,6 +153,7 @@ public class DriverMulti {
                 executor.execute(task);
             }
             executor.shutdown();
+            reducer.reduce();
             try {
                 executor.awaitTermination(30, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
