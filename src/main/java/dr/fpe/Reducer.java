@@ -15,7 +15,7 @@ public class Reducer implements  IReducer {
     private static final Logger log = Logger.getLogger(Reducer.class.getName());
 
     final NamedEntityTree net;
-    final BlockingQueue queue = new LinkedBlockingQueue();
+    final BlockingQueue<NamedEntityTree.Update> queue = new LinkedBlockingQueue<NamedEntityTree.Update>();
 
     final private Writer wtr;
 
@@ -26,6 +26,16 @@ public class Reducer implements  IReducer {
 
     /** see IReducer */
     public Boolean reduce() {
+        while (true) {
+            try {
+                final NamedEntityTree.Update update = queue.take();
+                update.tn.recognized(update.ixs);
+            } catch(InterruptedException ex) {
+                // it is possible to get an interrupt when you should not
+                // What is the current procedure for dealing with this?
+                break;
+            }
+        }
         return Boolean.TRUE;
     }
 
@@ -43,6 +53,7 @@ public class Reducer implements  IReducer {
                 return Boolean.FALSE;
             }
         }
+
         return Boolean.TRUE;
     }
 }

@@ -6,8 +6,14 @@ package dr.fpe;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * This is the single-threaded driver.
@@ -19,71 +25,109 @@ public class DriverMulti {
     final private Nlp.Context ctx;
     final private CommandLine cmd;
     final private NamedEntityTree net;
+    final private Reducer reducer;
 
-    public DriverMulti(Nlp.Context ctx, final CommandLine cmd, final NamedEntityTree net, Reducer rdcr) {
+    public DriverMulti(Nlp.Context ctx, final CommandLine cmd, final NamedEntityTree net, Reducer reducer) {
         this.ctx = ctx;
         this.cmd = cmd;
         this.net = net;
+        this.reducer = reducer;
     }
 
+    public class Task implements Runnable {
+        final private File filePath;
+
+        public Task(final File filePath) {
+            this.filePath = filePath;
+        }
+
+        public void run() {
+            Lexer lex = new Lexer();
+            {
+                log.log(Level.INFO, "reading language file");
+                Reader rdr = null;
+                try {
+                    InputStream is = new FileInputStream(filePath);
+                    rdr = new InputStreamReader(is);
+                    lex.load(rdr);
+                } catch (FileNotFoundException ex) {
+                    log.log(Level.SEVERE, "could not open the named-entity file.");
+                    ctx.status = Nlp.Status.FAIL;
+                    return;
+                } finally {
+                    try {
+                        if (rdr != null)
+                            rdr.close();
+                    } catch (IOException ex) {
+                        log.log(Level.SEVERE, "could not close the file.");
+                        ctx.status = Nlp.Status.FAIL;
+                        return;
+                    }
+                }
+                lex.analyze();
+            }
+            final Parser parser = new Parser();
+            parser.parse(lex);
+
+            net.recognize(reducer, net, 1, lex.getSymbolTable(), parser);
+        }
+    }
     /**
+     * This is only called with the '-z' option.
+     * We unpack the zip file and send the work to the thread-pool.
      *
+     * The unzipping could probably be done to input-streams but I
+     * am not familiar with how to do that.
      */
     public Boolean main() {
-        Lexer lex = new Lexer();
-        {
-            log.log(Level.INFO, "reading language file");
-            Reader rdr = null;
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        if (cmd.hasOption("z")) {
+            log.log(Level.INFO, "reading zipped input file");
+            InputStream zippy = null;
+            byte[] buffer = new byte[2048];
             try {
-                InputStream is = new FileInputStream(cmd.getOptionValue("l"));
-                rdr = new InputStreamReader(is);
-                lex.load(rdr);
-            } catch (FileNotFoundException ex) {
-                log.log(Level.SEVERE, "could not open the named-entity file.");
-                ctx.status = Nlp.Status.FAIL;
-                return Boolean.FALSE;
-            } finally {
-                try {
-                    if (rdr != null)
-                        rdr.close();
-                } catch (IOException ex) {
-                    log.log(Level.SEVERE, "could not close the file.");
-                    ctx.status = Nlp.Status.FAIL;
-                    return Boolean.FALSE;
+                final File tmpDirPath = (cmd.hasOption("t")) ?
+                        new File(cmd.getOptionValue("t")) :
+                        new File(System.getProperty("java.io.tmpdir"));
+                // final File tmpDir = Files.createTempDirectory(tmpDirPath);
+                tmpDirPath.mkdirs();
+                tmpDirPath.deleteOnExit();
+
+                zippy = new FileInputStream(cmd.getOptionValue("z"));
+                final ZipInputStream stream = new ZipInputStream(zippy);
+                ZipEntry entry;
+                while((entry = stream.getNextEntry()) != null) {
+                    final File langFile = new File(tmpDirPath, entry.getName());
+                    langFile.deleteOnExit();
+                    FileOutputStream tmp = null;
+                    try {
+                        tmp = new FileOutputStream(langFile);
+                        int len = 0;
+                        while ((len = stream.read(buffer)) > 0) {
+                            tmp.write(buffer, 0, len);
+                        }
+                    } finally {
+                        if (tmp != null) {
+                            tmp.close();
+                        }
+                    }
+                    final Task task = new Task(langFile);
+                    log.log(Level.INFO, "task started");
+                    executor.execute(task);
                 }
-            }
-            lex.analyze();
-        }
-
-        final Parser parser = new Parser();
-        parser.parse(lex);
-
-        String xmlString = parser.asXmlString();
-        if (cmd.hasOption("x")) {
-            log.log(Level.INFO, "writing AST xml");
-            Writer wtr = null;
-            try {
-                OutputStream os = new FileOutputStream(cmd.getOptionValue("x"));
-                wtr = new OutputStreamWriter(os);
-                wtr.write(xmlString);
+                executor.shutdown();
             } catch (IOException ex) {
-                log.log(Level.SEVERE, "could not write to the output file.");
-                ctx.status = Nlp.Status.FAIL;
-                return Boolean.FALSE;
+                //
             } finally {
                 try {
-                    if (wtr != null)
-                        wtr.close();
-                } catch (IOException ex) {
-                    log.log(Level.SEVERE, "could not close the output file.");
-                    ctx.status = Nlp.Status.FAIL;
-                    return Boolean.FALSE;
+                    if (zippy != null) {
+                        zippy.close();
+                    }
+                } catch (IOException ex1) {
+                    log.log(Level.INFO, "give up");
                 }
             }
-        } else {
-            ctx.result = xmlString;
         }
-
         ctx.status = Nlp.Status.OK;
         return Boolean.TRUE;
     }

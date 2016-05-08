@@ -1,5 +1,5 @@
 This is a report of the named-entities detected
-Sun May 08 14:07:03 CDT 2016
+Sun May 08 14:22:54 CDT 2016
 ROOT:Ernst:Haeckel
 ROOT:Franz:Ferdinand
 ROOT:Austria:Hungary

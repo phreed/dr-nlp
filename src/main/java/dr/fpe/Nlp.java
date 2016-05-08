@@ -85,6 +85,9 @@ public class Nlp {
 
                     final DriverMulti drvr = new DriverMulti(ctx, cmd, net, rdcr);
                     drvr.main();
+                    // process updates on named-entity-tree
+                    rdcr.reduce();
+
                 } catch (IOException ex) {
                     log.log(Level.SEVERE, "could not write to the output file.");
                     ctx.status = Nlp.Status.FAIL;
