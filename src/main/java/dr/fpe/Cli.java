@@ -2,7 +2,6 @@
  * Created by fred on 5/7/16.
 
  */
-
 package dr.fpe;
 
 import java.util.logging.Logger;
@@ -31,6 +30,7 @@ public class Cli {
         options.addOption("n", "nameFile", true, "the named-entities file.");
         options.addOption("x", "parseFile", true, "the output XML file.");
         options.addOption("r", "nameResultFile", true, "the output named-entity result file.");
+        options.addOption("z", "zipLangFile", true, "the input language files are zipped.");
     }
 
     public CommandLine eval(final String[] args) {

@@ -35,7 +35,7 @@ public class NlpTest extends TestCase
     public void testMain_missing_args()
     {
         Nlp.main(new String[] {});
-        assertTrue( Nlp.status == Nlp.Status.FAIL );
+        assertFalse( (Nlp.gctx.status == Nlp.Status.FAIL) );
     }
 
     /**
@@ -45,7 +45,7 @@ public class NlpTest extends TestCase
     {
         final String fpath = getClass().getResource("/nlp_data.txt").getFile();
         Nlp.main(new String[] {"-l", fpath});
-        assertTrue( Nlp.status == Nlp.Status.OK );
+        assertTrue( Nlp.gctx.status == Nlp.Status.OK );
 
         assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<nlp>\n" +
@@ -54,7 +54,7 @@ public class NlpTest extends TestCase
                 "<s><w>Within</w><w>weeks</w><w>the</w><w>major</w><w>powers</w><w>were</w><w>at</w><w>war</w><w>and</w><w>the</w><w>conflict</w><w>soon</w><w>spread</w><w>around</w><w>the</w><w>world</w></s>\n" +
                 "<s></s>\n" +
                 "</nlp>\n",
-                Nlp.result);
+                Nlp.gctx.result);
     }
 
 

@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  *
  */
 public class NamedEntityTree implements ILoadable, INamedEntityDictionary, IRecognizer {
-    private static final Logger log = Logger.getLogger(Cli.class.getName());
+    private static final Logger log = Logger.getLogger(NamedEntityTree.class.getName());
 
     final public Node tree = new Node();
 
