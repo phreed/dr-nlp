@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -41,6 +42,10 @@ public class DriverMulti {
             this.filePath = filePath;
         }
 
+        /**
+         * There really should be a callback to announce that the task is complete.
+         * I ran out of time.
+         */
         public void run() {
             Lexer lex = new Lexer();
             {
@@ -116,6 +121,12 @@ public class DriverMulti {
                     executor.execute(task);
                 }
                 executor.shutdown();
+                try {
+                    executor.awaitTermination(30, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    log.log(Level.SEVERE, "threads interrupted");
+                }
+
             } catch (IOException ex) {
                 //
             } finally {
@@ -126,6 +137,24 @@ public class DriverMulti {
                 } catch (IOException ex1) {
                     log.log(Level.INFO, "give up");
                 }
+            }
+        }
+        // I had too many problems with the zip.
+        if (cmd.hasOption("y")) {
+            log.log(Level.INFO, "reading directory of input files");
+
+            final File dirPath = new File(cmd.getOptionValue("y"));
+
+            for (final File langFile : dirPath.listFiles()) {
+                final Task task = new Task(langFile);
+                log.log(Level.INFO, "task started");
+                executor.execute(task);
+            }
+            executor.shutdown();
+            try {
+                executor.awaitTermination(30, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                log.log(Level.SEVERE, "threads interrupted");
             }
         }
         ctx.status = Nlp.Status.OK;

@@ -52,12 +52,17 @@ mvn exec:java -Dexec.args="-l ./src/test/resources/nlp_data.txt -n ./src/test/re
 
 The main problem here is coordinating updates to the named-entity-tree.
 Augment the reporter to perform the updates on the named-entity-tree.
-The reporter will make use of a conncurrent-queue to post the updates
+The reporter will make use of a blocking-concurrent-queue to post the updates
 which will be performed in the main thread.
 
+I tried to get the following to work but the zipfile stuff was not working.
 ```bash
-`mvn exec:java -Dexec.args="-z ./src/test/resources/nlp_data.zip -n ./src/test/resources/NER.txt -r results/p3.txt"
+mvn exec:java -Dexec.args="-z ./src/test/resources/nlp_data.zip -n ./src/test/resources/NER.txt -r results/p3.txt -t target/unzip/"
  ```
+ I unzipped the files into a directory and added an alternate path.
+ ```bash
+ mvn exec:java -Dexec.args="-y ./src/test/resources/nlp_data -n ./src/test/resources/NER.txt -r results/p3.txt"
+  ```
 
  ### Remaining items
 

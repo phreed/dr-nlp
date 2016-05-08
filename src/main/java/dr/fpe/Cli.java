@@ -32,6 +32,7 @@ public class Cli {
         options.addOption("r", "nameResultFile", true, "the output named-entity result file.");
         options.addOption("z", "zipLangFile", true, "the input language files are zipped.");
         options.addOption("t", "tempdir", true, "the temporary directory for unzipped files.");
+        options.addOption("y", "langDir", true, "the directory holding many language files.");
     }
 
     public CommandLine eval(final String[] args) {
