@@ -6,14 +6,14 @@ package dr.fpe;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -36,10 +36,10 @@ public class DriverMulti {
     }
 
     public class Task implements Runnable {
-        final private File filePath;
+        final private InputStream is;
 
-        public Task(final File filePath) {
-            this.filePath = filePath;
+        public Task(final InputStream is) {
+            this.is = is;
         }
 
         /**
@@ -49,26 +49,9 @@ public class DriverMulti {
         public void run() {
             Lexer lex = new Lexer();
             {
-                log.log(Level.INFO, "reading language file " + filePath.getPath().toString());
-                Reader rdr = null;
-                try {
-                    InputStream is = new FileInputStream(filePath);
-                    rdr = new InputStreamReader(is);
-                    lex.load(rdr);
-                } catch (FileNotFoundException ex) {
-                    log.log(Level.SEVERE, "could not open the named-entity file.");
-                    ctx.status = Nlp.Status.FAIL;
-                    return;
-                } finally {
-                    try {
-                        if (rdr != null)
-                            rdr.close();
-                    } catch (IOException ex) {
-                        log.log(Level.SEVERE, "could not close the file.");
-                        ctx.status = Nlp.Status.FAIL;
-                        return;
-                    }
-                }
+                // log.log(Level.INFO, "reading language file " + filePath.getPath().toString());
+                final Reader rdr = new InputStreamReader(this.is);
+                lex.load(rdr);
                 lex.analyze();
             }
             final Parser parser = new Parser();
@@ -90,36 +73,14 @@ public class DriverMulti {
 
         if (cmd.hasOption("z")) {
             log.log(Level.INFO, "reading zipped input file");
-            InputStream zippy = null;
-            byte[] buffer = new byte[2048];
+            ZipFile zippy = null;
             try {
-                final File tmpDirPath = (cmd.hasOption("t")) ?
-                        new File(cmd.getOptionValue("t")) :
-                        new File(System.getProperty("java.io.tmpdir"));
-                // final File tmpDir = Files.createTempDirectory(tmpDirPath);
-                tmpDirPath.mkdirs();
-                tmpDirPath.deleteOnExit();
-
-                zippy = new FileInputStream(cmd.getOptionValue("z"));
-                final ZipInputStream stream = new ZipInputStream(zippy);
-                ZipEntry entry;
-                while((entry = stream.getNextEntry()) != null) {
-                    final File langFile = new File(tmpDirPath, entry.getName());
-                    langFile.deleteOnExit();
-                    FileOutputStream tmp = null;
-                    try {
-                        tmp = new FileOutputStream(langFile);
-                        int len = 0;
-                        while ((len = stream.read(buffer)) > 0) {
-                            tmp.write(buffer, 0, len);
-                        }
-                    } finally {
-                        if (tmp != null) {
-                            tmp.close();
-                        }
-                    }
-                    final Task task = new Task(langFile);
-                    log.log(Level.INFO, "task started");
+                zippy = new ZipFile(cmd.getOptionValue("z"));
+                final Enumeration<? extends ZipEntry> entries = zippy.entries();
+                while(entries.hasMoreElements()) {
+                    final ZipEntry entry = entries.nextElement();
+                    final Task task = new Task( zippy.getInputStream(entry) );
+                    log.log(Level.INFO, "task started " + entry.toString());
                     executor.execute(task);
                 }
                 executor.shutdown();
@@ -149,9 +110,26 @@ public class DriverMulti {
             final File dirPath = new File(cmd.getOptionValue("y"));
             log.log(Level.INFO, dirPath.toString());
             for (final File langFile : dirPath.listFiles()) {
-                final Task task = new Task(langFile);
-                log.log(Level.INFO, "task started");
-                executor.execute(task);
+                Reader rdr = null;
+                try {
+                    InputStream is = new FileInputStream(langFile);
+                    final Task task = new Task(is);
+                    log.log(Level.INFO, "task started " + langFile);
+                    executor.execute(task);
+                } catch (FileNotFoundException ex) {
+                    log.log(Level.SEVERE, "could not open the named-entity file.");
+                    ctx.status = Nlp.Status.FAIL;
+                    continue;
+                } finally {
+                    try {
+                        if (rdr != null)
+                            rdr.close();
+                    } catch (IOException ex) {
+                        log.log(Level.SEVERE, "could not close the file.");
+                        ctx.status = Nlp.Status.FAIL;
+                        continue;
+                    }
+                }
             }
             executor.shutdown();
             reducer.reduce();

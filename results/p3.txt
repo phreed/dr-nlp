@@ -1,26 +1,10 @@
 This is a report of the named-entities detected
-Sun May 08 17:12:30 CDT 2016
-ROOT:Earth
-ROOT:Moon
-ROOT:Pacific:Ocean
-ROOT:Antikythera
-ROOT:Sun:Microsystems
-ROOT:Sun
-ROOT:Oracle:Corporation
-ROOT:Neil:Armstrong
-ROOT:Buzz:Aldrin
-ROOT:Michael:Collins
+Sun May 08 17:32:20 CDT 2016
 ROOT:Euclid
 ROOT:Elements
 ROOT:Venice
 ROOT:Carl:Benjamin:Boyer
 ROOT:Bible
-ROOT:Japan
-ROOT:James:Clerk:Maxwell
-ROOT:Isaac:Newton
-ROOT:Newton
-ROOT:Broyden:Fletcher:Goldfarb:Shanno
-ROOT:BFGS
 ROOT:Montgomery:Castle
 ROOT:Powys
 ROOT:Wales
@@ -29,3 +13,19 @@ ROOT:Shrewsbury
 ROOT:Robert:of:Belleme
 ROOT:King:Henry:III
 ROOT:Llywelyn:ap:Gruffudd
+ROOT:Antikythera
+ROOT:Japan
+ROOT:Broyden:Fletcher:Goldfarb:Shanno
+ROOT:BFGS
+ROOT:Newton
+ROOT:Sun:Microsystems
+ROOT:Sun
+ROOT:Oracle:Corporation
+ROOT:Moon
+ROOT:Neil:Armstrong
+ROOT:Buzz:Aldrin
+ROOT:Michael:Collins
+ROOT:Earth
+ROOT:Pacific:Ocean
+ROOT:James:Clerk:Maxwell
+ROOT:Isaac:Newton
