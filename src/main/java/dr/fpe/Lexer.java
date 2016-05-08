@@ -82,10 +82,21 @@ public class Lexer implements ILexer, ILoadable {
     }
 
 
+    /**
+     * A helper function to extract the name of the token.
+     *
+     * @param ix
+     * @param jx
+     * @return
+     */
     private StringBuilder extract(final int ix, final int jx) {
         final StringBuilder sb = new StringBuilder();
-        for (int kx = ix; kx < jx; kx++) {
+        for (int kx = ix; kx < jx && kx < raw.size(); kx++) {
             sb.append(raw.get(kx));
+        }
+        if (jx > raw.size()) {
+            log.log(Level.INFO, new StringBuilder().append(jx).append(':').append(raw.size())
+                    .append(" ").append(sb).toString());
         }
         return sb;
     }

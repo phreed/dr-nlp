@@ -144,7 +144,7 @@ public class DriverMulti {
             log.log(Level.INFO, "reading directory of input files");
 
             final File dirPath = new File(cmd.getOptionValue("y"));
-
+            log.log(Level.INFO, dirPath.toString());
             for (final File langFile : dirPath.listFiles()) {
                 final Task task = new Task(langFile);
                 log.log(Level.INFO, "task started");

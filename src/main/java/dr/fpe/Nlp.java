@@ -72,7 +72,7 @@ public class Nlp {
             final DriverSingle drvr = new DriverSingle(ctx, cmd, net);
             drvr.main();
             return;
-        } else if (cmd.hasOption("z")) {
+        } else if (cmd.hasOption("z") || cmd.hasOption("y")) {
             if (cmd.hasOption("r")) {
                 log.log(Level.INFO, "writing named-entity recognition file");
                 Writer wtr = null;
