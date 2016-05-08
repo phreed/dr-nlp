@@ -92,8 +92,8 @@ public class DriverSingle {
                     final OutputStream os = new FileOutputStream(cmd.getOptionValue("r"));
                     wtr = new OutputStreamWriter(os);
                     final ReportWriter rptr = new ReportWriter(wtr);
-                    rptr.report("This is a report of the named-entities detected");
-                    rptr.report(new java.util.Date().toString());
+                    wtr.write("This is a report of the named-entities detected\n");
+                    wtr.write(new java.util.Date().toString() + '\n');
                     net.recognize(rptr, net, 1, lex.getSymbolTable(), parser);
 
                 } catch (IOException ex) {

@@ -54,6 +54,16 @@ public class NamedEntityTree implements ILoadable, INamedEntityDictionary, IReco
             this.jx = jx;
         }
     }
+
+    public class Update {
+        final Node tn;
+        final Indices ixs;
+
+        public Update(final Node tn, final Indices ixs) {
+            this.tn = tn;
+            this.ixs = ixs;
+        }
+    }
     /**
      * It is possible for an internal node to
      * designate a named-entity, not just leaf nodes.
@@ -189,7 +199,7 @@ public class NamedEntityTree implements ILoadable, INamedEntityDictionary, IReco
      * Find the longest matching sequence in the named-entity-tree.
      * Walk up from there looking for a terminal node.
      */
-    public Boolean recognize(final IReporter reporter, final INamedEntityDictionary net, int fx, final SymbolTable st, final Parser psr) {
+    public Boolean recognize(final IReducer reporter, final INamedEntityDictionary net, int fx, final SymbolTable st, final Parser psr) {
         for (int sx=0; sx < psr.sentenceList.size(); sx++) {
             Parser.Sentence sentence = psr.sentenceList.get(sx);
 
@@ -216,11 +226,7 @@ public class NamedEntityTree implements ILoadable, INamedEntityDictionary, IReco
                     termNode = termNode.parent;
                 }
                 if (termNode.terminal) {
-
-                    termNode.recognized(new Indices(fx, sx, ix, jx));
-                    if (termNode.occurenceCount() < 2) {
-                        reporter.report(termNode.toString());
-                    }
+                    reporter.report(new Update(termNode, new Indices(fx, sx, ix, jx) ));
                 }
             }
         }

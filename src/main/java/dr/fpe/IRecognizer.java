@@ -18,5 +18,5 @@ public interface IRecognizer {
      * @param psr
      * @return
      */
-    Boolean recognize(final IReporter reporter, final INamedEntityDictionary net, int fx, final SymbolTable st, final Parser psr);
+    Boolean recognize(final IReducer reporter, final INamedEntityDictionary net, int fx, final SymbolTable st, final Parser psr);
 }

@@ -20,7 +20,7 @@ public class DriverMulti {
     final private CommandLine cmd;
     final private NamedEntityTree net;
 
-    public DriverMulti(Nlp.Context ctx, final CommandLine cmd, final NamedEntityTree net) {
+    public DriverMulti(Nlp.Context ctx, final CommandLine cmd, final NamedEntityTree net, Reducer rdcr) {
         this.ctx = ctx;
         this.cmd = cmd;
         this.net = net;
@@ -82,35 +82,6 @@ public class DriverMulti {
             }
         } else {
             ctx.result = xmlString;
-        }
-
-        if (cmd.hasOption("n")) {
-            if (cmd.hasOption("r")) {
-                log.log(Level.INFO, "writing named-entity recognition file");
-                Writer wtr = null;
-                try {
-                    final OutputStream os = new FileOutputStream(cmd.getOptionValue("r"));
-                    wtr = new OutputStreamWriter(os);
-                    final ReportWriter rptr = new ReportWriter(wtr);
-                    rptr.report("This is a report of the named-entities detected");
-                    rptr.report(new java.util.Date().toString());
-                    net.recognize(rptr, net, 1, lex.getSymbolTable(), parser);
-
-                } catch (IOException ex) {
-                    log.log(Level.SEVERE, "could not write to the output file.");
-                    ctx.status = Nlp.Status.FAIL;
-                    return Boolean.FALSE;
-                } finally {
-                    try {
-                        if (wtr != null)
-                            wtr.close();
-                    } catch (IOException ex) {
-                        log.log(Level.SEVERE, "could not close the output file.");
-                        ctx.status = Nlp.Status.FAIL;
-                        return Boolean.FALSE;
-                    }
-                }
-            }
         }
 
         ctx.status = Nlp.Status.OK;

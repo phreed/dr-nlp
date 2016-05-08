@@ -73,7 +73,34 @@ public class Nlp {
             drvr.main();
             return;
         } else if (cmd.hasOption("z")) {
+            if (cmd.hasOption("r")) {
+                log.log(Level.INFO, "writing named-entity recognition file");
+                Writer wtr = null;
+                try {
+                    final OutputStream os = new FileOutputStream(cmd.getOptionValue("r"));
+                    wtr = new OutputStreamWriter(os);
+                    final Reducer rdcr = new Reducer(net, wtr);
+                    wtr.write("This is a report of the named-entities detected\n");
+                    wtr.write(new java.util.Date().toString() + '\n');
 
+                    final DriverMulti drvr = new DriverMulti(ctx, cmd, net, rdcr);
+                    drvr.main();
+                } catch (IOException ex) {
+                    log.log(Level.SEVERE, "could not write to the output file.");
+                    ctx.status = Nlp.Status.FAIL;
+                    return;
+                } finally {
+                    try {
+                        if (wtr != null)
+                            wtr.close();
+                    } catch (IOException ex) {
+                        log.log(Level.SEVERE, "could not close the output file.");
+                        ctx.status = Nlp.Status.FAIL;
+                        return;
+                    }
+                }
+            }
+            return;
         }
     }
 

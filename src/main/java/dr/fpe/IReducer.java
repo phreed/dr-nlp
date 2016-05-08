@@ -9,13 +9,13 @@ package dr.fpe;
  * The reporter is an accumulator of sorts that reduces
  * the results into a single object.
  */
-public interface IReporter {
+public interface IReducer {
 
     /**
      * Handle a message.
      *
-     * @param msg
+     * @param update
      * @return
      */
-    Boolean report(final String msg);
+    Boolean report(final NamedEntityTree.Update update);
 }
