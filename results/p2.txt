@@ -1,0 +1,6 @@
+This is a report of the named-entities detected
+ROOT:Ernst:Haeckel
+ROOT:Franz:Ferdinand
+ROOT:Austria:Hungary
+ROOT:Gavrilo:Princip
+ROOT:Serbia

@@ -13,7 +13,21 @@ public interface ISymbolTable {
     int add(final String ch);
 
     /**
-     * Get a symbol by index.
+     * Get a symbol name by index.
      */
     String get(int ix);
+
+    /**
+     * Get a symbol index by name.
+     * @param name
+     * @return
+     */
+    Integer get(String name);
+
+    /**
+     * Does the symbol table know this name?
+     * @param name
+     * @return
+     */
+    Boolean hasName(String name);
 }

@@ -25,7 +25,7 @@ public class SymbolTable implements ISymbolTable {
 
     /** see interface for doc */
     public int add(final String ch) {
-        log.log(Level.INFO, "adding symbol " + ch);
+        // log.log(Level.INFO, "adding symbol " + ch);
 
         if (wordmap.containsKey(ch)) {
             return wordmap.get(ch);
@@ -36,9 +36,18 @@ public class SymbolTable implements ISymbolTable {
         return ix;
     }
 
-    /** see interface for doc */
+    /** see ISymbolTable for doc */
     public String get(int ix) {
         return wordlist.get(ix);
+    }
+
+    /** see ISymbolTable for doc */
+    public Boolean hasName(final String name) {
+        return wordmap.containsKey(name);
+    }
+
+    public Integer get(String name) {
+        return wordmap.get(name);
     }
 
     public String toString() {

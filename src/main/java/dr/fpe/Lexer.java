@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Lexer implements ILexer {
+public class Lexer implements ILexer, ILoadable {
     private static final Logger log = Logger.getLogger(Cli.class.getName());
 
     private final List<Character> raw = new ArrayList<Character>();
@@ -57,9 +57,7 @@ public class Lexer implements ILexer {
          *
          */
         public Token(final TokType tt, final int offset, final int len, final String ch) {
-            final StringBuffer sb = new StringBuffer("token: ");
-            sb.append(tt).append(" : ").append(ch);
-            log.log(Level.INFO, sb.toString());
+            // log.log(Level.INFO, new StringBuffer("token: ").append(tt).append(" : ").append(ch).toString());
 
             this.tt = tt;
             this.offset = offset;
@@ -106,13 +104,11 @@ public class Lexer implements ILexer {
         MAIN:
         while (ix < raw.size()) {
             final Character ci = raw.get(ix);
-
-            final StringBuffer sb = new StringBuffer("analysis: ");
-            sb.append(ix).append(" : ").append(ci);
-            log.log(Level.INFO, sb.toString());
+            // log.log(Level.INFO, new StringBuffer("analysis: ").append(ix).append(" : ").append(ci).toString());
 
             if (ci == '.') {
-                log.log(Level.INFO, "a sentence-boundry?");
+                // log.log(Level.OFF, "a sentence-boundry?");
+
                 // look-ahead for white-space followed by upper-case (or raw end).
                 // this indicates one type of sentence-boundary.
                 // If not found then this is just a punctuation.
@@ -138,7 +134,8 @@ public class Lexer implements ILexer {
                 return Boolean.TRUE;
             }
             if (Character.isWhitespace(ci)) {
-                log.log(Level.INFO, "a whitespace");
+                // log.log(Level.OFF, "a whitespace");
+
                 int jx = ix+1;
                 WHITE_SPACE_LA:
                 while (jx < raw.size()) {
@@ -156,7 +153,8 @@ public class Lexer implements ILexer {
                 return Boolean.TRUE;
             }
             if (Character.isAlphabetic(ci)) {
-                log.log(Level.INFO, "a word");
+                // log.log(Level.OFF, "a word");
+
                 int jx = ix+1;
                 WORD_LA:
                 while (jx < raw.size()) {
@@ -174,7 +172,8 @@ public class Lexer implements ILexer {
                 return Boolean.TRUE;
             }
             // everything else is punctuation.
-            log.log(Level.INFO, "a punctuation");
+            // log.log(Level.OFF, "a punctuation");
+
             data.add(new Token(TokType.PUNC, ix, ix, extract(ix, ix).toString()));
             ix++;
             continue MAIN;
@@ -192,30 +191,22 @@ public class Lexer implements ILexer {
      * @return
      */
     public Boolean load(String in) {
-        log.log(Level.INFO, "loading via string");
         for (int ix=0; ix < in.length(); ix++) {
             raw.add(in.charAt(ix));
         }
-        log.log(Level.INFO, "loaded via string");
+        // log.log(Level.INFO, "loaded via string");
         return Boolean.TRUE;
     }
 
-    /**
-     * This is the reader to be used for most cases.
-     * If the input is a string then it can be wrapped in a StringReader.
-     *
-     * @param is
-     * @return
-     */
+    /** see ILoadable */
     public Boolean load(Reader is) {
-        log.log(Level.INFO, "loading via reader");
         try {
             int ch = is.read();
             while (ch != -1) {
                 raw.add(new Character((char) ch));
                 ch = is.read();
             }
-            log.log(Level.INFO, "loaded via reader");
+            // log.log(Level.INFO, "loaded via reader");
             return Boolean.TRUE;
         } catch (java.io.IOException ex) {
             log.log(Level.SEVERE, "Failed to parse command line properties", ex);

@@ -1,4 +1,4 @@
-Remote programming exercise
+### Remote programming exercise
 
 This project should be well tested and code should be checked into GitHub along with any
 output produced from running your program. Write your solution in the Java programming

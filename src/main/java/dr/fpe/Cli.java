@@ -1,5 +1,6 @@
 /**
  * Created by fred on 5/7/16.
+
  */
 
 package dr.fpe;
@@ -29,6 +30,7 @@ public class Cli {
         options.addOption("l", "langFile", true, "the language-file to process.");
         options.addOption("n", "nameFile", true, "the named-entities file.");
         options.addOption("x", "parseFile", true, "the output XML file.");
+        options.addOption("r", "nameResultFile", true, "the output named-entity result file.");
     }
 
     public CommandLine eval(final String[] args) {

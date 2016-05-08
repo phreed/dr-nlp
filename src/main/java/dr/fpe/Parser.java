@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public class Parser implements IParser {
     private static final Logger log = Logger.getLogger(Cli.class.getName());
 
-    final List<Sentence> sentenceList = new ArrayList<Sentence>();
+    final public List<Sentence> sentenceList = new ArrayList<Sentence>();
     private SymbolTable st;
 
     public Parser() {}
@@ -25,7 +25,7 @@ public class Parser implements IParser {
         final public Integer word;
 
         public Word(final IToken tok) {
-           this.word = tok.getIndex();
+            this.word = tok.getIndex();
         }
     }
 
@@ -34,7 +34,7 @@ public class Parser implements IParser {
      */
     public class Sentence {
         public Sentence() {}
-        private final List<Word> wordList = new ArrayList<Word>();
+        public final List<Word> wordList = new ArrayList<Word>();
 
         /**
          * Include a word in the sentence.

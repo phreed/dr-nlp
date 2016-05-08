@@ -32,6 +32,7 @@ public class Nlp {
         final CommandLine cmd;
         cmd = new Cli().eval(args);
 
+        Lexer lex = new Lexer();
         if (!cmd.hasOption("l")) {
             final StringBuffer sb = new StringBuffer();
             sb.append("missing file name to process: ");
@@ -40,14 +41,17 @@ public class Nlp {
             log.log(Level.WARNING, sb.toString());
             status = Status.FAIL;
             return;
-        }
-        try {
+        } else {
+            log.log(Level.INFO, "reading language file");
             Reader rdr = null;
-            Lexer lex = new Lexer();
             try {
                 InputStream is = new FileInputStream(cmd.getOptionValue("l"));
                 rdr = new InputStreamReader(is);
                 lex.load(rdr);
+            } catch (FileNotFoundException ex) {
+                log.log(Level.SEVERE, "could not open the named-entity file.");
+                status = Status.FAIL;
+                return;
             } finally {
                 try {
                     if (rdr != null)
@@ -58,23 +62,74 @@ public class Nlp {
                     return;
                 }
             }
-
             lex.analyze();
+        }
 
-            final Parser parser = new Parser();
-            parser.parse(lex);
+        final Parser parser = new Parser();
+        parser.parse(lex);
 
-            String xmlString = parser.asXmlString();
-            if (cmd.hasOption("x")) {
+        String xmlString = parser.asXmlString();
+        if (cmd.hasOption("x")) {
+            log.log(Level.INFO, "writing AST xml");
+            Writer wtr = null;
+            try {
+                OutputStream os = new FileOutputStream(cmd.getOptionValue("x"));
+                wtr = new OutputStreamWriter(os);
+                wtr.write(xmlString);
+            } catch (IOException ex) {
+                log.log(Level.SEVERE, "could not write to the output file.");
+                status = Status.FAIL;
+                return;
+            } finally {
+                try {
+                    if (wtr != null)
+                        wtr.close();
+                } catch (IOException ex) {
+                    log.log(Level.SEVERE, "could not close the output file.");
+                    status = Status.FAIL;
+                    return;
+                }
+            }
+        } else {
+            result = xmlString;
+        }
+
+        if (cmd.hasOption("n")) {
+            log.log(Level.INFO, "reading named-entity file");
+            Reader rdr = null;
+            NamedEntityTree net = new NamedEntityTree();
+            try {
+                InputStream is = new FileInputStream(cmd.getOptionValue("n"));
+                rdr = new InputStreamReader(is);
+                net.load(rdr);
+            } catch (FileNotFoundException ex) {
+                log.log(Level.SEVERE, "could not open the named-entity file.");
+                status = Status.FAIL;
+                return;
+            } finally {
+                try {
+                    if (rdr != null)
+                        rdr.close();
+                } catch (IOException ex) {
+                    log.log(Level.SEVERE, "could not close the named-entity file.");
+                    status = Status.FAIL;
+                    return;
+                }
+            }
+            if (cmd.hasOption("r")) {
+                log.log(Level.INFO, "writing named-entity recognition file");
                 Writer wtr = null;
                 try {
-                    OutputStream os = new FileOutputStream(cmd.getOptionValue("x"));
+                    final OutputStream os = new FileOutputStream(cmd.getOptionValue("r"));
                     wtr = new OutputStreamWriter(os);
-                    wtr.write(xmlString);
+                    final ReportWriter rptr = new ReportWriter(wtr);
+                    rptr.report("This is a report of the named-entities detected");
+                    net.recognize(rptr, net, 1, lex.getSymbolTable(), parser);
+
                 } catch (IOException ex) {
-                        log.log(Level.SEVERE, "could not write to the output file.");
-                        status = Status.FAIL;
-                        return;
+                    log.log(Level.SEVERE, "could not write to the output file.");
+                    status = Status.FAIL;
+                    return;
                 } finally {
                     try {
                         if (wtr != null)
@@ -85,22 +140,11 @@ public class Nlp {
                         return;
                     }
                 }
-            } else {
-                result = xmlString;
             }
-
-            status = Status.OK;
-
-        } catch (FileNotFoundException ex) {
-            final StringBuffer sb = new StringBuffer();
-            sb.append("missing file to process: ");
-            sb.append(cmd.getOptionValue("l"));
-            log.log(Level.WARNING, sb.toString());
-            status = Status.FAIL;
-            return;
         }
 
-
+        status = Status.OK;
 
     }
+
 }

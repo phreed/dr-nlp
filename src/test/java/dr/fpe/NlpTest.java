@@ -4,8 +4,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.StringReader;
-import java.net.URL;
 
 /**
  * Unit test for simple Nlp.
