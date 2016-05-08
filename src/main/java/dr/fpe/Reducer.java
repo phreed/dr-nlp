@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,11 +30,14 @@ public class Reducer implements  IReducer {
     public Boolean reduce() {
         while (true) {
             try {
-                final NamedEntityTree.Update update = queue.take();
+                final NamedEntityTree.Update update = queue.poll(10, TimeUnit.SECONDS);
+                if (update == null) {
+                    break;
+                }
                 update.tn.recognized(update.ixs);
                 if (update.tn.occurenceCount() < 2) {
                     try {
-                        log.log(Level.INFO, "inside main thread " + update.tn.toString());
+                        // log.log(Level.INFO, "inside main thread " + update.tn.toString());
                         wtr.write(update.tn.toString());
                         wtr.write('\n');
                         wtr.flush();

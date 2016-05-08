@@ -75,6 +75,7 @@ public class DriverMulti {
             parser.parse(lex);
 
             net.recognize(reducer, net, 1, lex.getSymbolTable(), parser);
+            return;
         }
     }
     /**
